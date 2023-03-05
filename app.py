@@ -55,7 +55,7 @@ def st_display_sweetviz(report_html,width=1000,height=500):
 def main():
     st.title("Welcome to My Site ⚜️")
     st.text("Part of my activity during my work.")
-    st.image('danbo-2008790_1280 (1).jpg', use_column_width=True)
+    st.image('_124911599_swallowtail_vulnerable_iainhleach.jpg', use_column_width=True)
     aktivitas = ["▪️ About","▪️ EDA", 
                  "▪️ More EDA","▪️ Plotting", 
                  "▪️ Your Interface Graph"
