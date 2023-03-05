@@ -136,8 +136,11 @@ def main():
             st.dataframe(df.head())
             st.success("Your data has been uploaded successfully!")
             st.text("Statistic of your data is here...")
+            st.success("No. 1")
             overview = overview_data(df, df.columns.values)
             overview
+            st.success("No. 2")
+            df.describe()
             
             status = st.radio("Please choose your detail: ", ["Sweetviz", "Pandas Profiling"])
             if status == "Pandas Profiling":
