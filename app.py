@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 #Data Viz pckgs
-import pygwalker as pyg
+# import pygwalker as pyg
 import seaborn as sns
 import matplotlib.pyplot as plt
 import  matplotlib
