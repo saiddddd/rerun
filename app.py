@@ -46,6 +46,38 @@ import sweetviz as sv
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
+def overview_data(data, features):
+    print(f"Dataset Shape: {data.shape}")
+    
+    df = data[features]
+#     df['target'] = data[target]
+    
+    total_cnt = df.shape[0]
+    
+
+    overview = pd.DataFrame(df.dtypes,columns=['dtypes'])
+    overview = overview.reset_index()
+    overview['features'] = overview['index']
+    overview = overview[['features','dtypes']]
+    overview['Missing'] = df.isnull().sum().values   
+    overview['%Missing'] = df.isnull().sum().values/df.shape[0]
+    overview['%Missing'] = overview['%Missing'].apply(lambda x: format(x, '.2%'))
+    overview['Uniques'] = df.nunique().values
+    overview['%Unique'] = df.nunique().values/df.shape[0]
+    overview['%Unique'] = overview['%Unique'].apply(lambda x: format(x, '.2%')) 
+        
+    for var in overview['features']:
+        nan_cnt = np.sum(df[var].isnull())
+        zero_cnt = np.sum(df[var] == 0) if df[var].dtypes != 'object' else np.sum(df[var] == '')
+        
+        overview.loc[overview['features'] == var, 'nan_ratio'] = nan_cnt/total_cnt
+        overview.loc[overview['features'] == var, 'zero_ratio'] = zero_cnt/total_cnt
+        
+        overview.loc[overview['features'] == var, 'coverage'] = df[var].count()/total_cnt
+        overview.loc[overview['features'] == var, 'coverage_nonzero'] =  overview.loc[overview['features'] == var, 'coverage'] - overview.loc[overview['features'] == var, 'zero_ratio']
+        
+    return overview
+
 
 def st_display_sweetviz(report_html,width=1000,height=500):
     report_file = codecs.open(report_html,'r')
@@ -103,6 +135,10 @@ def main():
             df = pd.read_csv(data)
             st.dataframe(df.head())
             st.success("Your data has been uploaded successfully!")
+            st.text("Statistic of your data is here...")
+            overview = overview_data(df, df.columns.values)
+            overview
+            
             status = st.radio("Please choose your detail: ", ["Sweetviz", "Pandas Profiling"])
             if status == "Pandas Profiling":
                 st.success("You choose pandas profile to check the data!")
