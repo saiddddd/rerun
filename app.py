@@ -136,7 +136,7 @@ def main():
             st.dataframe(df.head())
             st.success("Your data has been uploaded successfully!")
             st.text("Statistic of your data is here...")
-            st.success("Your file contains {} rows and {} columns".format(df.shape[0), df.shape[1]))
+            st.success("Your file contains {} rows and {} columns".format(df.shape[0], df.shape[1]))
             overview = overview_data(df, df.columns.values)
             overview
 
