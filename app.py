@@ -105,7 +105,7 @@ def main():
             df = pd.read_csv(data)
             st.dataframe(df.head())
             st.success("Your data has been uploaded successfully!")
-            if st.checkbox("Ukuran data"):
+            if st.checkbox("Sample size"):
                 st.write(df.shape)
             if st.checkbox("Variables/Features"):
                 all_columns = df.columns.to_list()
