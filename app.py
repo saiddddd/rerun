@@ -140,7 +140,7 @@ def main():
             overview = overview_data(df, df.columns.values)
             overview
             st.success("No. 2")
-            df.describe()
+            print(df.describe())
             
             status = st.radio("Please choose your detail: ", ["Sweetviz", "Pandas Profiling"])
             if status == "Pandas Profiling":
