@@ -143,12 +143,12 @@ def main():
             
             status = st.radio("Please choose your detail: ", ["Sweetviz", "Pandas Profiling"])
             if status == "Pandas Profiling":
-                st.success("You choose pandas profile to check the data!")
+                st.success("You are choosing pandas profile to check the data!")
                 if st.button("Generate your report"):
                     profile = ProfileReport(df)
                     st_profile_report(profile)
             else:
-                st.success("You choose sweetviz to check the data!")
+                st.success("You are choosing sweetviz to check the data!")
                 if st.button("Generate your report"):
                     report = sv.analyze(df)
                     report.show_html()
