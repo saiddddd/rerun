@@ -103,7 +103,6 @@ def main():
     aktivitas = ["▪️ About","▪️ EDA", 
                  "▪️ More EDA","▪️ Plotting", 
                  "▪️ Your Interface Graph",
-                 "▪️ Mask Detector"
                 #  "▪️ Modelling", "▪️ Fraud Detection", "▪️ Clustering","▪️ Stream ML"
                  ]
     choice = st.sidebar.selectbox("Select your activity here", aktivitas)
