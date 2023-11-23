@@ -135,7 +135,7 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
 
                 solution_data = {
                     'iteration': j,
-                    'number of features': mediannum(num_feature_list),
+                    'number of features': len(best_sf),
                     'best F1-score': max(f1_list),
                     'median F1-score': mediannum(f1_list),
                     'std F1-score': np.std(f1_list),
