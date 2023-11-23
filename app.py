@@ -41,6 +41,17 @@ from sklearn.preprocessing import StandardScaler
 from streamlit_pandas_profiling import st_profile_report
 import sweetviz as sv 
 
+import random
+import time
+import math
+
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+import benchmarks
+from sklearn.preprocessing import LabelEncoder
+
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 
@@ -55,7 +66,7 @@ def main():
     st.image('maxresdefault.jpg', use_column_width=True)
     aktivitas = ["▪️ About","▪️ EDA 1", "▪️ EDA 2",
                   #"▪️ Modelling", "▪️ Fraud Detection", 
-                  "▪️ Clustering"]
+                  "▪️ Clustering", "▪️ Classification Task"]
     choice = st.sidebar.selectbox("Select your activity here", aktivitas)
     if choice == "▪️ About":
         st.subheader("About 🧬")   
@@ -454,6 +465,24 @@ def main():
                     st.warning(eval_dua)
                     st.success("Remember that a lower index Davies-Bouldin index relates to a model with better separation between the clusters and a higher index Calinski-Harabasz (score) relates to a model with better defined clusters i.e The index is the ratio of the sum of between-clusters dispersion and of inter-cluster dispersion for all clusters (where dispersion is defined as the sum of distances squared)")
 
+    elif choice == "▪️ Classification Task":
+        import MGWO_DA_RUN
+        st.subheader("Classification Using MGWO-DA Feature Selection")   
+        st.text("Please ensure that your target variable is named 'Class,' and that your features are already in numeric format.")
+        data = st.file_uploader("Please put your data here!", type = ["csv", "txt", "xls"])
+        if data is not None:
+            df = pd.read_csv(data)
+            #df.dropna(inplace=True)
+            st.dataframe(df.head())
+            st.success("Your data has been uploaded successfully!")
+            all_columns = df.columns.to_list()
+            #selected_columns = st.multiselect("Select the variable to be reviewed", all_columns)
+            if len(all_columns) > 0:
+                new_df = df[all_columns]
+                st.dataframe(new_df)
+                MGWO_DA_RUN.feature_select(new_df)
+                
+    
 
 if __name__ == "__main__":
      main()   
