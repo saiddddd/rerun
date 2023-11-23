@@ -94,6 +94,8 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
         f1_list = []
         auc_list = []
         acc_list = []
+        best_sf = None  # Menyimpan indeks fitur terpilih terbaik
+        best_fitness = 0.0  # Menyimpan fitness terbaik
         solution_list = []
 
         subset_size = int(1.0 * len(y))
@@ -123,6 +125,12 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
                     auc_list.append(auc)
                     acc_list.append(acc)
 
+                    # Periksa apakah fitness saat ini lebih baik dari yang sebelumnya
+                    current_fitness = np.mean(f1_list)  # Misalnya, menggunakan F1-score sebagai fitness
+                    if current_fitness > best_fitness:
+                        best_fitness = current_fitness
+                        best_sf = sf.copy()  # Simpan indeks fitur terpilih saat ini
+
                 status_placeholder.empty()
 
                 solution_data = {
@@ -136,13 +144,14 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
                     'std AUC-score': np.std(auc_list),
                     'best Accuracy': max(acc_list),
                     'median Accuracy': mediannum(acc_list),
-                    'std Accuracy': np.std(acc_list)
+                    'std Accuracy': np.std(acc_list),
+                    'selected features': best_sf  # Tambahkan indeks fitur terpilih terbaik
                 }
 
                 solution_list.append(solution_data)
                 
                 # Simpan model terakhir
-                final_model = {'particle': n, 'iteration': j, 'model': mdl}
+                final_model = {'particle': n, 'iteration': j, 'model': mdl, 'selected_features': best_sf}
 
         st.write(solution_list)        
         st.write("Finish processing in ", time.time() - start, 's')
@@ -153,7 +162,7 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
         # Simpan model ke dalam file pickle
         final_model_filename = "final_model.pkl"
         with open(final_model_filename, 'wb') as final_model_file:
-            pickle.dump(final_model['model'], final_model_file)
+            pickle.dump(final_model, final_model_file)
 
         # Tambahkan tombol download untuk file pickle model terakhir
         download_link = create_download_link(final_model_filename)
@@ -164,7 +173,7 @@ def create_download_link(filename):
     with open(filename, 'rb') as file:
         data = file.read()
         base64_encoded = base64.b64encode(data).decode()
-    href = f'<a href="data:file/txt;base64,{base64_encoded}" download="{filename}">Click here to download the final model</a>'
+    href = f'<a href="data:application/octet-stream;base64,{base64_encoded}" download="{filename}">Click here to download the final model</a>'
     return href
 
 # Contoh pemanggilan:
