@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 import pandas as pd
 from MGWO_DA import jfs
 from sklearn.svm import SVC
@@ -10,6 +11,7 @@ import warnings
 import datetime
 import time
 import streamlit as st
+import base64
 
 warnings.filterwarnings("ignore")
 
@@ -40,7 +42,6 @@ def optimized_combined_kernel(X, Y):
     return beta * K_lin + (1 - beta) * K_rbf
 
 def fast_fitness_evaluation(X_subset, y_subset, sf):
-    #mdl = SVC(kernel='rbf', random_state=50, probability=True)
     mdl = SVC(kernel=optimized_combined_kernel, random_state=50, probability=True)
     ss = StratifiedKFold(n_splits=5, shuffle=True)
     f1_scores, auc_scores, acc_scores = [], [], []
@@ -62,7 +63,7 @@ def fast_fitness_evaluation(X_subset, y_subset, sf):
         auc_scores.append(score_auc)
         acc_scores.append(score_acc)
     
-    return np.mean(f1_scores), np.mean(auc_scores), np.mean(acc_scores)
+    return np.mean(f1_scores), np.mean(auc_scores), np.mean(acc_scores), mdl
 
 def feature_select(data, particle_num=[10], iteration_num=[10]):
     start = time.time()
@@ -72,8 +73,6 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
     particle = particle_num
     iteration = iteration_num
 
-    #data = pd.read_csv(data_path)
-    #data = data.sample(1000)
     st.write('shape of dataset:', data.shape)
     X = data.loc[:, data.columns != 'Class'].to_numpy()
     y = data['Class']
@@ -87,6 +86,8 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
 
     feat = X
     label = y
+
+    final_model = None
 
     for n in particle:
         num_feature_list = []
@@ -105,9 +106,7 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
 
             for j in iteration:
                 for i in range(10):
-                    #print(f'for particle {n} with {j} max iterations, now in {i} iteration(s)')
                     status_placeholder.write(f'For particle {n} with {j} max iterations, now in {i} iteration(s)')
-                    #st.write(f'For particle {n} with {j} max iterations, now in {i} iteration(s)')
                     fold = {'x': feat, 'y': label}
                     k = 5
                     N = n
@@ -115,21 +114,20 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
                     opts = {'k': k, 'fold': fold, 'N': N, 'T': T}
 
                     fmdl = jfs(feat, label, opts)
-                    sf = fmdl['sf']
+                    sf = fmdl['sf']  # Perlu deklarasi sf di sini
                     num_feat = fmdl['nf']
                     num_feature_list.append(num_feat)
 
-                    f1, auc, acc = fast_fitness_evaluation(X_subset, y_subset, sf)
+                    f1, auc, acc, mdl = fast_fitness_evaluation(X_subset, y_subset, sf)
                     f1_list.append(f1)
                     auc_list.append(auc)
                     acc_list.append(acc)
 
                 status_placeholder.empty()
-                
+
                 solution_data = {
                     'iteration': j,
-                    'number of features': num_feat,
-                    'index of features': sf,
+                    'number of features': mediannum(num_feature_list),
                     'best F1-score': max(f1_list),
                     'median F1-score': mediannum(f1_list),
                     'std F1-score': np.std(f1_list),
@@ -142,33 +140,32 @@ def feature_select(data, particle_num=[10], iteration_num=[10]):
                 }
 
                 solution_list.append(solution_data)
+                
+                # Simpan model terakhir
+                final_model = {'particle': n, 'iteration': j, 'model': mdl}
 
-        # out_path = "result_update.txt"
-        # solution_path = 'solution_update.csv'
-
-        # with open(out_path, "w") as f:
-        #     f.write("MeanF1:" + "\n")
-        #     f.write(str(np.mean(f1_list)) + "\n")
-        #     f.write("=" * 20 + "\n")
-        #     f.write("BestF1" + "\n")
-        #     f.write(str(max(f1_list)) + "\n")
-        #     f.write("=" * 20 + "\n")
-        #     f.write("MeanAUC:" + "\n")
-        #     f.write(str(np.mean(auc_list)) + "\n")
-        #     f.write("=" * 20 + "\n")
-        #     f.write("MeanSize:" + "\n")
-        #     f.write(str(np.mean(num_feature_list)) + "\n")
-        #     f.write("=" * 20 + "\n")
-        #     f.write("MeanAccuracy:" + "\n")
-        #     f.write(str(np.mean(acc_list)) + "\n")
-
-        # print(solution_list)        
-        # print("Finish processing in ", time.time() - start, 's')
-        # print('this process finished at: ', datetime.datetime.now())
-        
         st.write(solution_list)        
         st.write("Finish processing in ", time.time() - start, 's')
         st.write('This process finished at: ', datetime.datetime.now())
+
+    # Pastikan ada model yang tersimpan sebelum mencoba menyimpannya
+    if final_model and final_model['model']:
+        # Simpan model ke dalam file pickle
+        final_model_filename = "final_model.pkl"
+        with open(final_model_filename, 'wb') as final_model_file:
+            pickle.dump(final_model['model'], final_model_file)
+
+        # Tambahkan tombol download untuk file pickle model terakhir
+        download_link = create_download_link(final_model_filename)
+        st.markdown(download_link, unsafe_allow_html=True)
+        st.success("Model has been successfully trained and saved!")
+
+def create_download_link(filename):
+    with open(filename, 'rb') as file:
+        data = file.read()
+        base64_encoded = base64.b64encode(data).decode()
+    href = f'<a href="data:file/txt;base64,{base64_encoded}" download="{filename}">Click here to download the final model</a>'
+    return href
 
 # Contoh pemanggilan:
 # feature_select("cleavland.csv")
