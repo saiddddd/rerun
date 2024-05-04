@@ -24,6 +24,7 @@ from sklearn.neighbors import  KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import  RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
 from sklearn.metrics import  accuracy_score
 from  sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
@@ -37,6 +38,24 @@ from sklearn.datasets import make_blobs
 import pylab as pl
 import codecs
 from sklearn.preprocessing import StandardScaler
+
+from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier, RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, f1_score, roc_curve, roc_auc_score
+from xgboost import XGBClassifier
+from collections import Counter
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+import math as mt
+from sklearn.model_selection import StratifiedKFold
+from sklearn import preprocessing
+from sklearn import svm
+from sklearn.ensemble import ExtraTreesClassifier
+import lightgbm as ltb
 
 from streamlit_pandas_profiling import st_profile_report
 import sweetviz as sv 
@@ -66,7 +85,7 @@ def main():
     st.image('danbo.jpg', use_column_width=True)
     aktivitas = ["▪️ About","▪️ EDA 1", "▪️ EDA 2",
                   #"▪️ Modelling", "▪️ Fraud Detection", 
-                  "▪️ Clustering", "▪️ Classification Task"]
+                  "▪️ Clustering", "▪️ Classification Task (1) - Wrapper based", "▪️ Classification Task (2) - Filtering based"]
     choice = st.sidebar.selectbox("Select your activity here", aktivitas)
     if choice == "▪️ About":
         st.subheader("About 🧬")   
@@ -203,214 +222,7 @@ def main():
                         cust_plot = df[selected_column_names].plot(kind=type_of_plot)
                         st.write(cust_plot)
                         st.pyplot()      
-    # elif choice == "▪️ Modelling":
-    #     st.subheader("Machine Learning Model")
-    #     status = st.radio("Choose your data availability: ", ["From Sklearn", "From Your Database"])
-    #     if status == "From Sklearn":
-    #         st.success("You choose dataset from sklearn!")
-    #         dataset_name = st.sidebar.selectbox("Select Dataset", ("Iris", "Breast Cancer", "Wine dataset"))
-    #         classifier_name = st.sidebar.selectbox("Select Classifier", ("KNN", "SVM", "Random Forest"))
-    #         def get_dataset(dataset_name):
-    #             if dataset_name == "Iris":
-    #                 data = datasets.load_iris()
-    #             elif dataset_name == "Breast Cancer":
-    #                 data = datasets.load_breast_cancer()
-    #             else:
-    #                 data = datasets.load_wine()
-    #             X = data.data
-    #             y = data.target
-    #             return X, y   
-
-    #         X, y = get_dataset(dataset_name)
-    #         st.write("shape of dataset", X.shape)
-    #         st.write("number of classes", len(np.unique(y)))
-
-    #         def add_paramater_ui(clf_name):
-    #             params = dict()
-    #             if clf_name == "KNN":
-    #                 K = st.sidebar.slider("K", 1, 15)
-    #                 params["K"] = K
-    #             elif clf_name == "SVM":
-    #                 C = st.sidebar.slider("C", 0.01, 10.0)
-    #                 params["C"] = C
-    #             else:
-    #                 max_depth = st.sidebar.slider("max_depth", 2, 15)
-    #                 n_estimators = st.sidebar.slider("n_estimators", 1, 100)
-    #                 params["max_depth"] = max_depth
-    #                 params["n_estimators"] = n_estimators
-    #             return params   
-    #         params = add_paramater_ui(classifier_name)
-
-    #         def get_classifier(clf_name, params):
-    #             if clf_name == "KNN":
-    #                 clf = KNeighborsClassifier(n_neighbors = params["K"])
-    #             elif clf_name == "SVM":
-    #                 clf = SVC(C = params["C"])
-    #             else:
-    #                 clf = RandomForestClassifier(n_estimators = params["n_estimators"], max_depth = params["max_depth"], random_state = 2)
-    #             return clf
-
-    #         clf = get_classifier(classifier_name, params)    
-
-    #         #Classfication
-    #         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 2)
-    #         clf.fit(X_train, y_train)
-    #         y_pred = clf.predict(X_test)
-    #         acc = accuracy_score(y_test, y_pred)
-    #         st.write(f"classifer = {classifier_name}")
-    #         st.write(f"accuracy = {acc}")
-
-    #         #PLOT
-    #         pca = PCA(2)
-    #         X_projected = pca.fit_transform(X)
-
-    #         x1 = X_projected[:,0]
-    #         x2 = X_projected[:,1]
-    #         fig = plt.figure()
-    #         plt.scatter(x1, x2, c = y, alpha = 0.8, cmap = "viridis")
-    #         plt.xlabel("First component")
-    #         plt.ylabel("Second component")
-    #         plt.colorbar()
-    #         st.pyplot()
-
-    #     else:
-    #         data = st.file_uploader("Please upload your clean data here :)", type = ["csv", "txt", "xls"])
-            
-    #         if data is not None:
-    #             df = pd.read_csv(data)
-    #             st.dataframe(df.head())
-    #             st.success("Your data has been uploaded successfully!")
-    #             st.error("Please make sure that your target class is the last column!")
-    #             X = df.iloc[:,0:-1]
-    #             Y = df.iloc[:,-1]
-    #             y = Y
-    #             seed = 7
-
-    #             models = []
-    #             models.append(("LR", LogisticRegression()))
-    #             models.append(("LDA", LinearDiscriminantAnalysis()))
-    #             models.append(("KNN", KNeighborsClassifier()))
-    #             models.append(("CART", DecisionTreeClassifier()))
-    #             models.append(("NB", GaussianNB()))
-    #             models.append(("SVM", SVC()))
-
-    #             model_names = []
-    #             model_mean = []
-    #             model_std = []
-    #             all_models = []
-    #             scoring = 'accuracy'
-    #             for name,model in models:
-    #                 kfold = model_selection.KFold(n_splits=10, random_state=seed)
-    #                 cv_results = model_selection.cross_val_score(model, X,Y,cv=kfold, scoring = scoring)
-    #                 model_names.append(name)
-    #                 model_mean.append(cv_results.mean())
-    #                 model_std.append(cv_results.std())
-    #                 accuracy_results = {"model":name, "akurasi model": cv_results.mean(), "standar deviasi": cv_results.std()}
-    #                 all_models.append(accuracy_results)
-    #             if  st.checkbox("Tabel Metrik Model"):
-    #                 st.dataframe(pd.DataFrame(zip(model_names,model_mean,model_std), columns=["Model", "Akurasi", "Standar Deviasi"]))
-    #             if st.checkbox("Metrik Model Json"):
-    #                 st.json(all_models)    
-    #             if st.checkbox("Details"):
-    #                 st.subheader("Models Detail For Classification") 
-    #                 classifier_name = st.sidebar.selectbox("Select Classifier", ("KNN", "SVM", "Random Forest"))
-    #                 st.write("shape of dataset", X.shape)
-    #                 st.write("number of classes", len(np.unique(y)))
-    #                 def add_paramater_ui(clf_name):
-    #                     params = dict()
-    #                     if clf_name == "KNN":
-    #                         K = st.sidebar.slider("K", 1, 15)
-    #                         params["K"] = K
-    #                     elif clf_name == "SVM":
-    #                         C = st.sidebar.slider("C", 0.01, 10.0)
-    #                         params["C"] = C
-    #                     else:
-    #                         max_depth = st.sidebar.slider("max_depth", 2, 15)
-    #                         n_estimators = st.sidebar.slider("n_estimators", 1, 100)
-    #                         params["max_depth"] = max_depth
-    #                         params["n_estimators"] = n_estimators
-    #                     return params   
-    #                 params = add_paramater_ui(classifier_name)
-    #                 def get_classifier(clf_name, params):
-    #                     if clf_name == "KNN":
-    #                         clf = KNeighborsClassifier(n_neighbors = params["K"])
-    #                     elif clf_name == "SVM":
-    #                         clf = SVC(C = params["C"])
-    #                     else:
-    #                         clf = RandomForestClassifier(n_estimators = params["n_estimators"], max_depth = params["max_depth"], random_state = 2)
-    #                     return clf
-    #                 clf = get_classifier(classifier_name, params)    
-
-    #                 #Classfication
-    #                 test_size = st.sidebar.slider("test_size", 0.05, 0.30)
-    #                 random_state = st.sidebar.slider("random_state", 0, 9)
-    #                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = test_size, random_state = random_state)
-    #                 clf.fit(X_train, y_train)
-    #                 y_pred = clf.predict(X_test)
-    #                 acc = accuracy_score(y_test, y_pred)
-    #                 st.write(f"classifer = {classifier_name}")
-    #                 st.write(f"accuracy = {acc}")
-    #                 #PLOT
-    #                 pca = PCA(2)
-    #                 X_projected = pca.fit_transform(X)
-    #                 x1 = X_projected[:,0]
-    #                 x2 = X_projected[:,1]
-    #                 fig = plt.figure()
-    #                 plt.scatter(x1, x2, alpha = 0.8, cmap = "viridis")
-    #                 plt.xlabel("komponen pertama")
-    #                 plt.ylabel("komponen kedua")
-    #                 plt.colorbar()
-    #                 st.pyplot()
-
-    # elif choice == "▪️ Fraud Detection":
-    #     st.subheader("Fraud? Really?")   
-    #     data = st.file_uploader("Where is your data?", type = ["csv", "txt", "xls"])
-    #     if data is not None:
-    #         df = pd.read_csv(data)
-    #         st.dataframe(df.head())
-    #         st.success("Your data has been uploaded successfully!")
-    #         all_columns = df.columns.to_list()
-    #         if st.checkbox("Pilih Variable/Feature yang akan ditinjau"):
-    #             selected_columns = st.multiselect("Pilih", all_columns)
-    #             pjg = len(selected_columns)
-    #             delta = df[selected_columns]
-    #             st.dataframe(delta)
-    #             if st.checkbox("Ukuran data"):
-    #                 st.write(delta.shape)
-    #             if st.checkbox("Basic Description"):
-    #                 st.write(delta.describe())
-    #             if st.checkbox("Go to Fraud"):    
-    #                 from numpy.linalg import inv
-    #                 meanValue = delta.mean()
-    #                 covValue = delta.cov()
-    #                 X = delta.to_numpy()
-    #                 S = covValue.to_numpy()
-    #                 for i in range(pjg):
-    #                     X[:,i] = X[:,i] - meanValue[i] 
-    #                 def mahalanobis(row):
-    #                     return np.matmul(row,S).dot(row)
-    #                 anomaly_score = np.apply_along_axis( mahalanobis, axis=1, arr=X)    
-    #                 anom = pd.DataFrame(anomaly_score, columns=['Anomaly score'])
-    #                 result = pd.concat((delta,anom), axis=1)
-    #                 result['norek_penerima'] = df['norek_penerima']
-    #                 def keterangan(x):
-    #                     if x > 1000000:
-    #                         return "Tidak Wajar"
-    #                     else:
-    #                         return "Wajar"
-    #                 result['Keputusan'] = result['Anomaly score'].apply(keterangan)
-    #                 st.dataframe(result)
-    #                 value = result['Keputusan'].unique().tolist()
-    #                 if st.checkbox("Lihat yang tidak wajar?"):
-    #                     delta_new = result[result['Keputusan']=="Tidak Wajar"]
-    #                     st.dataframe(delta_new)
-    #                 st.subheader("Bagaimana dengan komposisi keputusan?")
-    #                 if st.checkbox("Look at the Pie Chart"):
-    #                     all_columns = result.columns.to_list()
-    #                     columns_to_plot = st.selectbox("Sila pilih 1 variabel", all_columns)
-    #                     pie_plot_dua = result[columns_to_plot].value_counts().plot.pie(autopct="%1.1f%%")
-    #                     st.write(pie_plot_dua)
-    #                     st.pyplot()
+    
     elif choice == "▪️ Clustering":
         st.subheader("Clustering with K-Means")   
         st.text("Since the method used here is based on K-Means clustering, make sure your dataset is all numeric.")
@@ -465,7 +277,7 @@ def main():
                     st.warning(eval_dua)
                     st.success("Remember that a lower index Davies-Bouldin index relates to a model with better separation between the clusters and a higher index Calinski-Harabasz (score) relates to a model with better defined clusters i.e The index is the ratio of the sum of between-clusters dispersion and of inter-cluster dispersion for all clusters (where dispersion is defined as the sum of distances squared)")
 
-    elif choice == "▪️ Classification Task":
+    elif choice == "▪️ Classification Task (1) - Wrapper based":
         import MGWO_DA_RUN
         st.subheader("Classification Using MGWO-DA Feature Selection")   
         st.text("Please ensure that your target variable is named 'Class,' and that your features are already in numeric format.")
@@ -482,7 +294,294 @@ def main():
                 st.dataframe(new_df)
                 MGWO_DA_RUN.feature_select(new_df)
                 
+    elif choice == "▪️ Classification Task (2) - Filtering based":
+        st.subheader("Classification using multiple types of models and multiple strategies.")   
+        st.text("Please ensure that your target variable is named 'Class,' and that your features are already in numeric format.")
+        data = st.file_uploader("Please put your data here!", type = ["csv", "txt", "xls"])
+        if data is not None:
+            df = pd.read_csv(data)
+            #df.dropna(inplace=True)
+            # st.dataframe(df.head())
+            st.success("Your data has been uploaded successfully!")
+            all_columns = df.columns.to_list()
+            #selected_columns = st.multiselect("Select the variable to be reviewed", all_columns)
+            if len(all_columns) > 0:
+                class_column = 'Class'
+                new_df = df[all_columns]
+                st.dataframe(new_df)
+                
+                sns.set_style("whitegrid")
+                
+                plt.figure(figsize=(8, 6))
+                
+     
+                sns.countplot(data=new_df, x=class_column, palette='Set2')
+                
+                plt.title('Distribution of Classes')
+                plt.xlabel('Class')
+                plt.ylabel('Count')
+
+                class_labels = new_df[class_column].unique()
+                
+                plt.xticks(ticks=range(len(class_labels)), labels=class_labels)
+                st.pyplot() 
+                
+                fig, ax = plt.subplots(figsize=(15, 15))
     
+                sns.heatmap(new_df.corr(), ax=ax, annot=True, linewidth=.6)
+                st.pyplot()
+                
+                #Modeling  part
+                X1 = new_df.drop('Class',axis=1)
+                y1 = new_df['Class']
+                
+                # Single classifier based models
+                nb = GaussianNB()
+                dt = DecisionTreeClassifier()
+                svmc = svm.SVC(kernel='poly', degree=2)
+                lr = LogisticRegression(random_state = 0)
+                knn = KNeighborsClassifier(n_neighbors=7)
+                rf = RandomForestClassifier(max_depth= 5, n_estimators= 500)
+                extr = ExtraTreesClassifier(max_depth= 10, n_estimators= 500)
+                lgb = ltb.LGBMClassifier()
+                xgb = XGBClassifier()
+                adb = AdaBoostClassifier()
+
+                clf=[nb, dt, svmc, lr, knn, rf, extr, lgb, xgb, adb]
+                
+                from sklearn.metrics import precision_score
+                from sklearn.metrics import recall_score
+                
+                k = 10
+                kf = StratifiedKFold(n_splits=k, random_state=None)
+                ac1=[]
+                fs1=[]
+                rec1=[]
+                prec1=[]
+                roc1=[]
+                for i in clf:
+                    acc_score = []
+                    fscore = []
+                    pr_score = []
+                    re_score = []
+                    roc_score = []
+                    for train_index , test_index in kf.split(X1,y1):
+                        X_train , X_test = X1.iloc[train_index,:],X1.iloc[test_index,:]
+                        y_train , y_test = y1.iloc[train_index] , y1.iloc[test_index]
+
+                        i.fit(X_train,y_train)
+                        pred_values = i.predict(X_test)
+                        acc = accuracy_score(pred_values , y_test)
+                        acc_score.append(acc)
+
+                        f = f1_score(pred_values , y_test)
+                        fscore.append(f)
+
+                        pr = precision_score(pred_values , y_test)
+                        pr_score.append(pr)
+
+                        re = recall_score(pred_values , y_test)
+                        re_score.append(re)
+
+                        roc = roc_auc_score(pred_values , y_test)
+                        roc_score.append(roc)
+
+                    avg_acc_score = sum(acc_score)/k
+                    avg_f1_score = sum(fscore)/k
+                    avg_pr_score = sum(pr_score)/k
+                    avg_re_score = sum(re_score)/k
+                    avg_roc_score = sum(roc_score)/k
+                    ac1.append(round(avg_acc_score*100,2))
+                    fs1.append(round(avg_f1_score*100,2))
+                    rec1.append(round(avg_re_score*100,2))
+                    prec1.append(round(avg_pr_score*100,2))
+                    roc1.append(round(avg_roc_score*100,2))      
+                    
+                st.success("Results from individual models without strategies")          
+                
+                clfs =['Naive Bayes', 'Decision Tree', 'Support Vector Machine Classifier', 
+                       'Logistic Regression', 'K Nearest Neigbour', 'Random Forest', 
+                       'ExtraTreesClassifier', 'LightGBM', 'XGBoost', 'AdaBoost']
+                df_result = pd.DataFrame({
+                        'Classifier': clfs,
+                        'Accuracy in (%)': ac1,
+                        'F1 Score in (%)': fs1,
+                        'Recall in (%)': rec1,
+                        'Precision in (%)': prec1,
+                        'ROC AUC in (%)': roc1
+                    })
+                
+                st.dataframe(df_result.sort_values(by='F1 Score in (%)', ascending=False))   
+                
+                
+                st.success("Modelling with balance strategies (K Means SMOTE) and Filtering based")   
+        
+                X = new_df.drop('Class',axis=1)
+                y = new_df['Class'] 
+                
+                from imblearn.over_sampling import KMeansSMOTE
+                smote_kmeans = KMeansSMOTE()
+                X, y = smote_kmeans.fit_resample(X, y)
+                df3 = pd.concat([pd.DataFrame(X), pd.DataFrame(y)], axis=1)
+                
+                df = df3
+                class_counts = df[class_column].value_counts()
+                
+                plt.figure(figsize=(8, 6))
+                sns.barplot(x=class_counts.index, y=class_counts.values)
+                
+
+                plt.title('Class Distribution')
+                plt.xlabel('Class')
+                plt.ylabel('Count')
+
+                if len(class_counts.index) <= 2:  # Binary classification
+                    plt.xticks(ticks=class_counts.index, labels=['Negative', 'Positive'])
+                else:  # Multiclass classification
+                    plt.xticks(ticks=range(len(class_counts.index)), labels=class_counts.index)
+                
+                st.pyplot()
+                
+                X = df.drop('Class',axis=1)
+                
+                y = df['Class']
+                
+                from sklearn.ensemble import RandomForestRegressor
+                from boruta import BorutaPy
+
+                model = RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)
+
+                # Initialize Boruta
+                feat_selector = BorutaPy(
+                    verbose=2,
+                    estimator=model,
+                    n_estimators='auto',
+                    max_iter=10,
+                    random_state=42,
+                )
+
+                # Train Boruta
+                np.int = np.int32
+                np.float = np.float64
+                np.bool = np.bool_
+                feat_selector.fit(np.array(X), np.array(y))
+
+                # Print support and ranking for each feature
+                st.write("\n------Support and Ranking for each feature------\n")
+                for i in range(len(feat_selector.support_)):
+                    if feat_selector.support_[i]:
+                        st.write("Passes the test:", X.columns[i],
+                                " - Ranking:", feat_selector.ranking_[i], "✔️")
+                    else:
+                        st.write("Doesn't pass the test:", X.columns[i],
+                                " - Ranking:", feat_selector.ranking_[i], "❌")
+
+                # Features selected by Boruta
+                X_filtered = feat_selector.transform(np.array(X))
+
+                st.write("\n------Selected Features------\n")
+                selected_features = df.columns[:-1][feat_selector.support_]
+                st.write(selected_features)
+
+                # Train the model
+                model.fit(X_filtered, y)
+
+                # Compute predictions
+                predictions = model.predict(X_filtered)
+
+                # Create a dataframe with real predictions and values
+                p = pd.DataFrame({'pred': predictions, 'observed': y})
+
+                # Print the dataframe
+                st.write("\n------Predictions and real values------\n")
+                st.write(p)
+
+                # Compute RMSE
+                mse = ((p['pred'] - p['observed']) ** 2).mean()
+                rmse = np.sqrt(mse)
+                st.write("\n------RMSE------\n", round(rmse, 3))
+
+                X1 = df[selected_features]
+                
+                y1 = df['Class']
+                
+                # Single classifier based models
+                nb = GaussianNB()
+                dt = DecisionTreeClassifier()
+                svmc = svm.SVC(kernel='poly', degree=2)
+                lr = LogisticRegression(random_state = 0)
+                knn = KNeighborsClassifier(n_neighbors=7)
+                rf = RandomForestClassifier(max_depth= 5, n_estimators= 500)
+                extr = ExtraTreesClassifier(max_depth= 10, n_estimators= 500)
+                lgb = ltb.LGBMClassifier()
+                xgb = XGBClassifier()
+                adb = AdaBoostClassifier()
+
+                clf=[nb, dt, svmc, lr, knn, rf, extr, lgb, xgb, adb]   
+                
+                k = 10
+                kf = StratifiedKFold(n_splits=k, random_state=None)
+                ac2=[]
+                fs2=[]
+                rec2=[]
+                prec2=[]
+                roc2=[]
+                for i in clf:
+                    acc_score = []
+                    fscore = []
+                    pr_score = []
+                    re_score = []
+                    roc_score = []
+                    for train_index , test_index in kf.split(X1,y1):
+                        X_train , X_test = X1.iloc[train_index,:],X1.iloc[test_index,:]
+                        y_train , y_test = y1.iloc[train_index] , y1.iloc[test_index]
+
+                        i.fit(X_train,y_train)
+                        pred_values = i.predict(X_test)
+                        acc = accuracy_score(pred_values , y_test)
+                        acc_score.append(acc)
+
+                        f = f1_score(pred_values , y_test)
+                        fscore.append(f)
+
+                        pr = precision_score(pred_values , y_test)
+                        pr_score.append(pr)
+
+                        re = recall_score(pred_values , y_test)
+                        re_score.append(re)
+
+                        roc = roc_auc_score(pred_values , y_test)
+                        roc_score.append(roc)
+
+                    avg_acc_score = sum(acc_score)/k
+                    avg_f1_score = sum(fscore)/k
+                    avg_pr_score = sum(pr_score)/k
+                    avg_re_score = sum(re_score)/k
+                    avg_roc_score = sum(roc_score)/k
+                    ac2.append(round(avg_acc_score*100,2))
+                    fs2.append(round(avg_f1_score*100,2))
+                    rec2.append(round(avg_re_score*100,2))
+                    prec2.append(round(avg_pr_score*100,2))
+                    roc2.append(round(avg_roc_score*100,2))
+                
+                st.success("Results from individual models with multiple strategies")          
+                
+                clfs =['Naive Bayes', 'Decision Tree', 'Support Vector Machine Classifier', 
+                       'Logistic Regression', 'K Nearest Neigbour', 'Random Forest', 
+                       'ExtraTreesClassifier', 'LightGBM', 'XGBoost', 'AdaBoost']
+                df_result = pd.DataFrame({
+                        'Classifier': clfs,
+                        'Accuracy in (%)': ac2,
+                        'F1 Score in (%)': fs2,
+                        'Recall in (%)': rec2,
+                        'Precision in (%)': prec2,
+                        'ROC AUC in (%)': roc2
+                    })
+                
+                st.dataframe(df_result.sort_values(by='F1 Score in (%)', ascending=False))      
+        
+       
+        
 
 if __name__ == "__main__":
      main()   
