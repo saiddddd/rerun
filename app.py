@@ -631,17 +631,13 @@ def main():
                 st.dataframe(df)
                 
                 # Save DataFrame to CSV
-                if st.button("Download CSV"):
-                    csv = df.to_csv(index=False)
-                    href = f'<a href="data:file/csv;base64,{base64.b64encode(csv.encode()).decode()}" download="reviews.csv">Download CSV</a>'
-                    st.markdown(href, unsafe_allow_html=True)
+                csv = df.to_csv(index=False)
+                b64 = base64.b64encode(csv.encode()).decode()  # Encode to base64 (bytes), decode to string
                 
-                # Save DataFrame to XLSX
-                if st.button("Download XLSX"):
-                    xlsx = df.to_excel(index=False)
-                    href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{base64.b64encode(xlsx).decode()}" download="reviews.xlsx">Download XLSX</a>'
-                    st.markdown(href, unsafe_allow_html=True)
-       
+                # Create a download link with styled button
+                href = f'<a href="data:file/csv;base64,{b64}" download="reviews.csv"><button style="background-color:#4CAF50;border:none;color:white;padding:10px 20px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer;border-radius:12px;">Download CSV</button></a>'
+                st.markdown(href, unsafe_allow_html=True)
+
         
 
 if __name__ == "__main__":
