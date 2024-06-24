@@ -71,6 +71,10 @@ from sklearn.svm import SVC
 import benchmarks
 from sklearn.preprocessing import LabelEncoder
 
+import pandas as pd
+from google_play_scraper import Sort, reviews_all
+import base64
+
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 
@@ -85,7 +89,8 @@ def main():
     st.image('danbo.jpg', use_column_width=True)
     aktivitas = ["▪️ About","▪️ EDA 1", "▪️ EDA 2",
                   #"▪️ Modelling", "▪️ Fraud Detection", 
-                  "▪️ Clustering", "▪️ Classification Task (1) - Wrapper based", "▪️ Classification Task (2) - Filtering based"]
+                  "▪️ Clustering", "▪️ Classification Task (1) - Wrapper based", "▪️ Classification Task (2) - Filtering based",
+                  "▪️ Scrapper : Comments from play store"]
     choice = st.sidebar.selectbox("Select your activity here", aktivitas)
     if choice == "▪️ About":
         st.subheader("About 🧬")   
@@ -579,7 +584,63 @@ def main():
                     })
                 
                 st.dataframe(df_result.sort_values(by='F1 Score in (%)', ascending=False))      
+    
+    elif choice == "▪️ Scrapper : Comments from play store":
+        st.subheader("Extracting application reviews from the Play Store")
+        # Input for app_id
+        app_id = st.text_input("Please input application ID")
         
+        # Button for execution
+        if st.button("Extract Reviews"):
+            if app_id:
+                # Extract reviews from Google Play Store
+                result = reviews_all(
+                    app_id,
+                    sleep_milliseconds=0,
+                    lang='en',
+                    country='us',
+                    sort=Sort.MOST_RELEVANT,
+                    filter_score_with=5
+                )
+                
+                # Prepare DataFrame
+                reviewid = []
+                username = []
+                comment = []
+                jml_komen_disukai = []
+                score = []
+                waktu = []
+                user_image = []
+                
+                for i in range(len(result)):
+                    reviewid.append(result[i]['reviewId'])
+                    username.append(result[i]['userName'])
+                    comment.append(result[i]['content'])
+                    jml_komen_disukai.append(result[i]["thumbsUpCount"])
+                    score.append(result[i]["score"])
+                    waktu.append(result[i]["at"])
+                    user_image.append(result[i]["userImage"])
+                
+                df = pd.DataFrame(list(zip(reviewid, user_image, username, comment, jml_komen_disukai, score, waktu)),
+                                  columns=['review_id', 'user_image', 'username', 'comment', 'likes_count', 'rating', 'time'])
+                
+                # Rename columns
+                df.columns = ['review_id', 'user_image', 'username', 'comment', 'likes_count', 'rating', 'time']
+                
+                # Display DataFrame
+                st.dataframe(df)
+                
+                # Save DataFrame to CSV
+                if st.button("Download CSV"):
+                    csv = df.to_csv(index=False)
+                    href = f'<a href="data:file/csv;base64,{base64.b64encode(csv.encode()).decode()}" download="reviews.csv">Download CSV</a>'
+                    st.markdown(href, unsafe_allow_html=True)
+                
+                # Save DataFrame to XLSX
+                if st.button("Download XLSX"):
+                    xlsx = df.to_excel(index=False)
+                    href = f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{base64.b64encode(xlsx).decode()}" download="reviews.xlsx">Download XLSX</a>'
+                    st.markdown(href, unsafe_allow_html=True)
        
         
 
