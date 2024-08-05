@@ -71,6 +71,8 @@ from sklearn.svm import SVC
 import benchmarks
 from sklearn.preprocessing import LabelEncoder
 
+from MGWO import MGWO
+
 import pandas as pd
 from google_play_scraper import Sort, reviews_all
 import base64
@@ -90,7 +92,8 @@ def main():
     aktivitas = ["▪️ About","▪️ EDA 1", "▪️ EDA 2",
                   #"▪️ Modelling", "▪️ Fraud Detection", 
                   "▪️ Clustering", "▪️ Classification Task (1) - Wrapper based", "▪️ Classification Task (2) - Filtering based",
-                  "▪️ Scrapper : Comments from play store"]
+                  "▪️ Scrapper : Comments from play store",
+                  "▪️ Optimizer"]
     choice = st.sidebar.selectbox("Select your activity here", aktivitas)
     if choice == "▪️ About":
         st.subheader("About 🧬")   
@@ -637,8 +640,60 @@ def main():
                 # Create a download link with styled button
                 href = f'<a href="data:file/csv;base64,{b64}" download="reviews.csv"><button style="background-color:#4CAF50;border:none;color:white;padding:10px 20px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer;border-radius:12px;">Download CSV</button></a>'
                 st.markdown(href, unsafe_allow_html=True)
-
+                
+    elif choice == "▪️ Optimizer":
         
+        # Title of the application
+        st.title("MGWO Toolbox")
+
+        # Sidebar for parameter input
+        st.sidebar.header("Parameters")
+
+        search_agents = st.sidebar.number_input("Search Agents", min_value=1, value=30, step=1)
+        max_iterations = st.sidebar.number_input("Max Iterations", min_value=1, value=100, step=1)
+        lower_bound = st.sidebar.number_input("Lower Bound", value=-10.0)
+        upper_bound = st.sidebar.number_input("Upper Bound", value=10.0)
+        dimension = st.sidebar.number_input("Dimension", min_value=1, value=30, step=1)
+
+        # Text area for user-defined fitness function
+        st.sidebar.subheader("Objective Function")
+        objective_function_code = st.sidebar.text_area("Enter your objective function code here:", value="""def user_defined_fitness(x):
+            return np.sum(x**2)
+        """)
+
+        # Define the user-defined fitness function
+        exec(objective_function_code)
+
+        # Optimization process
+        if st.sidebar.button("Optimize"):
+            # Get the user-defined fitness function
+            fitness_function = eval("user_defined_fitness")
+            
+            best_fitness, best_solution, fitness_history, trajectories, position_history, exploration, exploitation = MGWO(
+                search_agents, max_iterations, lower_bound, upper_bound, dimension, fitness_function)
+
+            st.subheader("Optimization Results")
+
+            st.write(f"Best Fitness: {best_fitness}")
+            st.write(f"Best Solution: {best_solution}")
+
+            # Plot fitness history
+            st.subheader("Fitness History")
+            plt.figure(figsize=(10, 6))
+            plt.plot(fitness_history)
+            plt.xlabel("Iterations")
+            plt.ylabel("Fitness")
+            st.pyplot(plt)
+
+            # Plot exploration and exploitation
+            st.subheader("Exploration and Exploitation")
+            plt.figure(figsize=(10, 6))
+            plt.plot(range(1, max_iterations + 1), exploration, label='Exploration %')
+            plt.plot(range(1, max_iterations + 1), exploitation, label='Exploitation %')
+            plt.xlabel('Iterations')
+            plt.ylabel('Percentage')
+            plt.legend()
+            st.pyplot(plt)    
 
 if __name__ == "__main__":
      main()   
