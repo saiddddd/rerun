@@ -603,7 +603,7 @@ def main():
                     lang='en',
                     country='us',
                     sort=Sort.MOST_RELEVANT,
-                    filter_score_with=5
+                    filter_score_with=None
                 )
                 
                 # Prepare DataFrame
