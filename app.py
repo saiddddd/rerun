@@ -93,7 +93,7 @@ def main():
                   #"▪️ Modelling", "▪️ Fraud Detection", 
                   "▪️ Clustering", "▪️ Classification Task (1) - Wrapper based", "▪️ Classification Task (2) - Filtering based",
                   "▪️ Scrapper : Comments from play store",
-                  "▪️ Optimizer"]
+                  "▪️ Optimizer", "▪️ Classical Optimization Methods"]
     choice = st.sidebar.selectbox("Select your activity here", aktivitas)
     if choice == "▪️ About":
         st.subheader("About 🧬")   
@@ -694,6 +694,8 @@ def main():
             plt.ylabel('Percentage')
             plt.legend()
             st.pyplot(plt)    
-
+            
+    elif choice == "▪️ Classical Optimization Methods":
+        
 if __name__ == "__main__":
      main()   
