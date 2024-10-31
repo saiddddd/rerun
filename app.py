@@ -696,6 +696,7 @@ def main():
             st.pyplot(plt)    
             
     elif choice == "▪️ Classical Optimization Methods":
+        st.subheader("Under construction")
         
 if __name__ == "__main__":
      main()   
