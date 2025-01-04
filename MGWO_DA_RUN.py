@@ -65,7 +65,7 @@ def fast_fitness_evaluation(X_subset, y_subset, sf):
     
     return np.mean(f1_scores), np.mean(auc_scores), np.mean(acc_scores), mdl
 
-def feature_select(data, particle_num=[10], iteration_num=[10]):
+def feature_select(data, particle_num=[10], iteration_num=[1]):
     start = time.time()
     st.write('this process started at: ', datetime.datetime.now())
 
